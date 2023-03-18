@@ -1,8 +1,8 @@
-if [[ $WORKSPACE_DIR = "" ]]; then
-  WORKSPACE_DIR=$(pwd)
+if [[ $TMUX_WORKSPACE_DIR = "" ]]; then
+  TMUX_WORKSPACE_DIR=$(pwd)
 fi
 if [ $1"" = "" ]; then
-  choose_project=$(ls $WORKSPACE_DIR | fzf \
+  choose_project=$(ls $TMUX_WORKSPACE_DIR | fzf \
     --prompt="Select folder: " \
     --height 40% --border --margin 5%
   )
@@ -10,7 +10,7 @@ if [ $1"" = "" ]; then
 else
   session=$1
 fi
-session_wd=$WORKSPACE_DIR/${session}
+session_wd=$TMUX_WORKSPACE_DIR/${session}
 if [ ! -d ${session_wd} ]; then
   echo "Working dir for session '$session' does not exist: $session_wd"
   exit 1
@@ -23,10 +23,18 @@ else
   pushd `pwd`
   cd $session_wd
   tmux new-session -s ${session} -n editor -d
-
   tmux split-window -v -t ${session}
-  tmux send-keys -t ${session}:1.1 "vim -O2" C-m
   tmux resize-pane -t ${session}:1.1 -D 15
   tmux select-pane -t ${session}:1.1
+
+  # detecting python venv
+  venv=$(ls -l | grep venv | sed -r 's/(.*)(\ )(.*-venv)/\3/g')
+  if [[ $venv == "" ]]; then
+    tmux send-keys -t ${session}:1.1 "vim" C-m
+  else
+    echo "Detected Python virtual env, $venv, activating it"
+    tmux send-keys -t ${session}:1.1 "source ${venv}/bin/activate && vim" C-m
+    tmux send-keys -t ${session}:1.2 "source ${venv}/bin/activate" C-m
+  fi
   popd
 fi

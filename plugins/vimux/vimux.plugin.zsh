@@ -10,7 +10,6 @@ function start_vimux_session() {
       --height 40% --border --margin 5%
     )
     session=$choose_project
-    unset _ws_dir
   else
     session=$1
   fi
@@ -46,6 +45,7 @@ function start_vimux_session() {
     fi
     popd
   fi
+  unset _ws_dir
 }
 
 function _start_vimux_session() {

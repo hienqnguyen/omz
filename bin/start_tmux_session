@@ -1,8 +1,8 @@
 if [[ $TMUX_WORKSPACE_DIR = "" ]]; then
-  TMUX_WORKSPACE_DIR=$(pwd)
+  export TMUX_WORKSPACE_DIR=$(pwd)
 fi
 if [ $1"" = "" ]; then
-  choose_project=$(ls $TMUX_WORKSPACE_DIR | fzf \
+  choose_project=$(ls -tr $TMUX_WORKSPACE_DIR | fzf \
     --prompt="Select folder: " \
     --height 40% --border --margin 5%
   )
@@ -28,7 +28,7 @@ else
   tmux select-pane -t ${session}:1.1
 
   # detecting python venv
-  venv=$(ls -l | grep venv | sed -r 's/(.*)(\ )(.*-venv)/\3/g')
+  venv=$(ls -l | grep venv | sed -r 's/(.*)(\ )(.*venv)/\3/g')
   if [[ $venv == "" ]]; then
     tmux send-keys -t ${session}:1.1 "vim" C-m
   else

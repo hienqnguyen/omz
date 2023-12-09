@@ -1,11 +1,13 @@
 function start_vimux_session() {
   if [ $1"" = "" ]; then
-    if [[ $VIMUX_WORKSPACE_DIR = "" ]]; then
+    if [[ ${VIMUX_WORKSPACE_DIR} = "" ]]; then
       echo "Env VIMUX_WORKSPACE_DIR not defined. Using 'cwd'"
       _ws_dir=$(pwd)
+    else
+      _ws_dir=${VIMUX_WORKSPACE_DIR}
     fi
-    echo "Looking for project folders in workspace: $_ws_dir"
-    choose_project=$(ls -alt $_ws_dir | egrep -v "\.|total" | sed 's/.*:[0-9][0-9] //g' | fzf \
+    echo "Looking for project folders in workspace: ${_ws_dir}"
+    choose_project=$(ls -alt ${_ws_dir} | egrep -v "\.|total" | sed 's/.*:[0-9][0-9] //g' | fzf \
       --prompt="Select folder: " \
       --height 40% --border --margin 5%
     )
@@ -17,7 +19,7 @@ function start_vimux_session() {
     echo "No project selected"
     return 0
   fi
-  session_wd=$_ws_dir/${session}
+  session_wd=${_ws_dir}/${session}
   if [ ! -d ${session_wd} ]; then
     echo "Working dir for session '$session' does not exist: $session_wd"
     exit 1
@@ -50,10 +52,11 @@ function start_vimux_session() {
 
 function _start_vimux_session() {
   local -a commands
-  if [[ $_ws_dir = "" ]]; then
-    _ws_dir=$(pwd)
+  if [[ ${VIMUX_WORKSPACE_DIR} = "" ]]; then
+    commands=($(ls ${VIMUX_WORKSPACE_DIR}))
+  else 
+    commands=($(ls ${PWD}))
   fi
-  commands=($(ls $_ws_dir))
 
   if (( CURRENT == 2 )); then
         _describe -t commands 'commands' commands

@@ -41,7 +41,7 @@ function start_vimux_session() {
     tmux select-pane -t ${session}:1.1
   
     # detecting python venv
-    venv=$(ls -l | grep venv | sed -r 's/(.*)(\ )(.*venv)/\3/g')
+    venv=$(ls -al | grep venv | sed -r 's/(.*)(\ )(.*venv)/\3/g')
     if [[ $venv == "" ]]; then
       tmux send-keys -t ${session}:1.1 "vim" C-m
     else

@@ -33,23 +33,23 @@ function start_vimux_session() {
     echo "Session already active"
   else
     echo "Creating new session ${session}"
-    pushd `pwd`
-    cd $session_wd
     tmux new-session -s ${session} -n editor -d
     tmux split-window -v -t ${session}
     tmux resize-pane -t ${session}:1.1 -D 15
     tmux select-pane -t ${session}:1.1
+
+    tmux send-keys -t ${session}:1.1 "cd ${session_wd}" C-m
+    tmux send-keys -t ${session}:1.2 "cd ${session_wd}" C-m
   
-    # detecting python venv
-    venv=$(ls -al | grep venv | sed -r 's/(.*)(\ )(.*venv)/\3/g')
-    if [[ $venv == "" ]]; then
+    # detecting python venv, if multiple envs exists, pick most recently modified one
+    venv=$(ls -alt ${session_wd} | egrep -i '(\.)*.*venv.*' | sed -r 's/(.*)(\ )(.*venv)/\3/g' | head -1)
+    if [[ ${venv} == "" ]]; then
       tmux send-keys -t ${session}:1.1 "vim" C-m
     else
-      echo "Detected Python virtual env, $venv, activating it"
+      echo "Detected Python '${venv}' virtual env, activating it"
       tmux send-keys -t ${session}:1.1 "source ${venv}/bin/activate && vim" C-m
       tmux send-keys -t ${session}:1.2 "source ${venv}/bin/activate" C-m
     fi
-    popd
   fi
   unset __WS_DIR
 }
